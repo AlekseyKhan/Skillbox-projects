@@ -14,14 +14,13 @@ public class CustomerStorage {
         storage = new HashMap<>();
     }
 
-    public void addCustomer(String data) {
+    public void addCustomer(String data) throws ArrayIndexOutOfBoundsException {
+
         String[] components = data.split("\\s+");
         String name = components[0] + " " + components[1];
         String email = components[2];
         String phoneNumber = components[3];
-        if (components.length > 4) {
-            throw new RuntimeException("Неверный формат ввода. Строка слишком длинная");
-        }
+
         if (!NAME.matcher(name).matches()) {
             throw new RuntimeException("Неверный формат имени");
         }

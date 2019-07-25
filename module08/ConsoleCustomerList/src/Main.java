@@ -20,6 +20,7 @@ public class Main {
                 try {
                     executor.addCustomer(tokens[1]);
                 } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println(e.getMessage());
                     System.out.println(commandError);
                 } catch (RuntimeException e) {
                     System.out.println(e.getMessage());
