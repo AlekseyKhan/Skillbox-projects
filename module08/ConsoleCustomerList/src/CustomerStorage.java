@@ -14,19 +14,22 @@ public class CustomerStorage {
         storage = new HashMap<>();
     }
 
-    public void addCustomer(String data) throws ArrayIndexOutOfBoundsException {
+    public void addCustomer(String data) {
         String[] components = data.split("\\s+");
         String name = components[0] + " " + components[1];
         String email = components[2];
         String phoneNumber = components[3];
+        if (components.length > 4) {
+            throw new RuntimeException("Неверный формат ввода. Строка слишком длинная");
+        }
         if (!NAME.matcher(name).matches()) {
-            throw new IllegalArgumentException("Неверный формат имени");
+            throw new RuntimeException("Неверный формат имени");
         }
         if (!PHONENUMBER.matcher(phoneNumber).matches()) {
-            throw new IllegalArgumentException("Неверный формат тел. номера");
+            throw new RuntimeException("Неверный формат тел. номера");
         }
         if (!EMAIL.matcher(email).matches()) {
-            throw new IllegalArgumentException("Неверный формат эл. адреса");
+            throw new RuntimeException("Неверный формат эл. адреса");
         }
         storage.put(name, new Customer(name, phoneNumber, email));
 
@@ -37,6 +40,7 @@ public class CustomerStorage {
     }
 
     public void removeCustomer(String name) {
+
         storage.remove(name);
     }
 

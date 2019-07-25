@@ -1,8 +1,7 @@
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class Main
-{
+public class Main {
     private static String addCommand = "add Василий Петров " +
             "vasily.petrov@gmail.com +79215637722";
     private static String commandExamples = "\t" + addCommand + "\n" +
@@ -11,38 +10,34 @@ public class Main
             commandExamples;
     private static String helpText = "Command examples:\n" + commandExamples;
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         CustomerStorage executor = new CustomerStorage();
-        for(;;)
-        {
+        for (; ; ) {
             String command = scanner.nextLine();
             String[] tokens = command.split("\\s+", 2);
-            if(tokens[0].equals("add")) {
+            if (tokens[0].equals("add")) {
                 try {
                     executor.addCustomer(tokens[1]);
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    e.printStackTrace();
-                } catch (IllegalArgumentException e) {
+                    System.out.println(commandError);
+                } catch (RuntimeException e) {
                     System.out.println(e.getMessage());
                     System.out.println(commandError);
                 }
-            }
-            else if(tokens[0].equals("list")) {
+            } else if (tokens[0].equals("list")) {
                 executor.listCustomers();
-            }
-            else if(tokens[0].equals("remove"))
-            {
-                executor.removeCustomer(tokens[1]);
-            }
-            else if(tokens[0].equals("count")) {
+            } else if (tokens[0].equals("remove")) {
+                try {
+                    executor.removeCustomer(tokens[1]);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("Предупреждение! Укажите, что нужно удалить");
+                }
+            } else if (tokens[0].equals("count")) {
                 System.out.println("There are " + executor.getCount() + " customers");
-            }
-            else if(tokens[0].equals("help")) {
+            } else if (tokens[0].equals("help")) {
                 System.out.println(helpText);
-            }
-            else {
+            } else {
                 System.out.println(commandError);
             }
         }
