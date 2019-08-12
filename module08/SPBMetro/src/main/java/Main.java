@@ -14,31 +14,40 @@ import java.util.Scanner;
 
 public class Main
 {
-//    private static String dataFile = "src/main/resources/map.json";
-    private static String dataFile = "src/main/resources/mymap.json";
+    private static String dataFile = "src/main/resources/map.json";
+//    private static String dataFile = "src/main/resources/mymap.json";
     private static Scanner scanner;
 
     private static StationIndex stationIndex;
-    private static Logger logger;
+    private static Logger notFoundLogger;
+    private static Logger requestLogger;
+    private static Logger log4err;
 
     public static void main(String[] args)
     {
-//        logger = LogManager.getRootLogger();
+        notFoundLogger = LogManager.getLogger("NotFoundRequest");
+        log4err = LogManager.getLogger();
+        requestLogger = LogManager.getLogger("StationRequest");
+
         RouteCalculator calculator = getRouteCalculator();
 
         System.out.println("Программа расчёта маршрутов метрополитена Санкт-Петербурга\n");
         scanner = new Scanner(System.in);
         for(;;)
         {
-            Station from = takeStation("Введите станцию отправления:");
-            Station to = takeStation("Введите станцию назначения:");
+            try {
+                Station from = takeStation("Введите станцию отправления:");
+                Station to = takeStation("Введите станцию назначения:");
 
-            List<Station> route = calculator.getShortestRoute(from, to);
-            System.out.println("Маршрут:");
-            printRoute(route);
+                List<Station> route = calculator.getShortestRoute(from, to);
+                System.out.println("Маршрут:");
+                printRoute(route);
 
-            System.out.println("Длительность: " +
-                RouteCalculator.calculateDuration(route) + " минут");
+                System.out.println("Длительность: " +
+                        RouteCalculator.calculateDuration(route) + " минут");
+            } catch (Exception e) {
+                log4err.error(e);
+            }
         }
     }
 
@@ -74,10 +83,20 @@ public class Main
         {
             System.out.println(message);
             String line = scanner.nextLine().trim();
+
+            /**
+             * Для проверки принудительно вызывается runtime exception, если вводится err
+             * requestLogger записывает все запросы станций
+             * notFoundLogger записывает, только станции, которые не найдены
+             */
+            if(line.equals("err")) throw new RuntimeException("Принудительная ошибка");
+            requestLogger.info("Поиск станции: " + line);
+
             Station station = stationIndex.getStation(line);
             if(station != null) {
                 return station;
             }
+            notFoundLogger.info(String.format("Станция '%s' не найдена", line));
             System.out.println("Станция не найдена :(");
         }
     }

@@ -1,6 +1,7 @@
 .idea/
 out/
 target/
+logs/
 *.iml
 *.zip
 *.rar
