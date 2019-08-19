@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration status="WARN">
     <appenders>
-
-        <File name="StationRequest" fileName="logs/station_requests.log" immediateFlush="true">
-            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
+        <File name="SearchQueries" fileName="logs/requests.log" immediateFlush="true">
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} %msg%n"/>
+            <Filters>
+                <MarkerFilter marker="INPUT_HISTORY"/>
+            </Filters>
         </File>
 
-        <File name="NotFoundRequest" fileName="logs/station_not_found.log" immediateFlush="true">
-            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/>
+        <File name="InvalidEntries" fileName="logs/invalids.log" immediateFlush="true">
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} %msg%n"/>
+            <Filters>
+                <MarkerFilter marker="INVALID_ENTER"/>
+            </Filters>
         </File>
 
         <File name="Errors" fileName="logs/errors.log" immediateFlush="true">
@@ -17,16 +22,10 @@
     </appenders>
 
     <loggers>
-        <root level="debug">
+        <root level="info">
             <appender-ref ref="Errors" level="error"/>
+            <appender-ref ref="SearchQueries" level="info"/>
+            <appender-ref ref="InvalidEntries" level="info"/>
         </root>
-
-        <Logger name="NotFoundRequest" level="info">
-            <appender-ref ref="NotFoundRequest" level="info"/>
-        </Logger>
-
-        <Logger name="StationRequest" level="info">
-            <appender-ref ref="StationRequest" level="info"/>
-        </Logger>
     </loggers>
 </configuration>
