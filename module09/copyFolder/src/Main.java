@@ -7,28 +7,39 @@ import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-        String pathFrom = "C:/java";
+    public static void main(String[] args) {
+        String pathFrom = "data/from";
         String pathTo = "data/to";
 
-        copyFolder(pathFrom, pathTo);
+        try {
+            copyFolder(pathFrom, pathTo);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static void copyFolder(String from, String to) throws IOException {
         File source = new File(from);
         if (!source.exists()) {
-            throw new RuntimeException("Сбой. Нет источника копирования.");
+            throw new RuntimeException(String.format("Сбой. Путь %s не существует", source));
         }
 
         File dest = new File(to);
         if (!dest.exists()) {
-            throw new RuntimeException("Сбой. Папка назначения отсутствует.");
+            throw new RuntimeException(String.format("Сбой. Путь %s не существует", dest));
         }
 
         List<File> allFiles = getAllFiles(source);
+        if (allFiles == null) {
+            throw new RuntimeException("Сбой. Нет доступа к " + source);
+        }
         Path destFolder = Paths.get(to + File.separator + source.getName());
         Path commonPath = Paths.get(source.getCanonicalPath());
         for (File file : allFiles) {
+            if (file == null) {
+                System.out.println("Невозможно скопировать. Ссылка на null");
+                continue;
+            }
 
             Path filePath = Paths.get(file.getAbsolutePath());
             Path relativePath = commonPath.relativize(filePath);
@@ -36,6 +47,11 @@ public class Main {
 
             File destFile = new File(destPath.toString());
             File sourceFile = new File(filePath.toString());
+
+            if (!file.exists()) {
+                System.out.println(String.format("Не удалось скопировать %s", file));
+                continue;
+            }
 
             if (file.isFile()) {
                 copyFileUsingTransfer(sourceFile, destFile);
@@ -47,8 +63,11 @@ public class Main {
     }
 
     private static List<File> getAllFiles(File directory) throws IOException {
-
-        if (!directory.exists() || directory == null) {
+        if (directory == null) {
+            System.out.println("Ошибка. directory ссылается на null");
+            return null;
+        }
+        if (!directory.exists()) {
             System.out.println(String.format("Папка '%s' не найдена", directory.getName()));
             return null;
         }
@@ -67,6 +86,7 @@ public class Main {
         return resultList;
     }
 
+    @Deprecated
     private static void copyFileUsingStream(File src, File dest) throws IOException {
         try (InputStream is = new FileInputStream(src);
              OutputStream os = new FileOutputStream(dest)
@@ -77,10 +97,16 @@ public class Main {
                 os.write(buffer, 0, piece);
             }
         } catch (Exception e) {
+            System.out.println(String.format(
+                    "При копировании из %s в %s произошла ошибка",
+                    src.getAbsolutePath(),
+                    dest.getAbsolutePath()
+            ));
             e.printStackTrace();
         }
     }
 
+    @Deprecated
     private static void copyFileUsingFiles(File src, File dst) throws IOException {
         Files.copy(src.toPath(), dst.toPath());
     }
@@ -91,6 +117,11 @@ public class Main {
         {
             is.transferTo(os);
         } catch (Exception e) {
+            System.out.println(String.format(
+                    "Входные данные:\nsrc=%s\ndst=%s",
+                    src,
+                    dst
+            ));
             e.printStackTrace();
         }
     }
