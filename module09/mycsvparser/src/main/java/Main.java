@@ -1,9 +1,6 @@
 import java.io.*;
 import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,7 +15,9 @@ public class Main {
 
         List<Transaction> list = getData(pathOfCSV);
 
-        showReport(list);
+        if (!list.isEmpty()) {
+            showReport(list);
+        }
     }
 
     private static void showReport(List<Transaction> data) {
@@ -104,7 +103,15 @@ public class Main {
     }
 
     private static List<Transaction> getData(String path) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(path));
+
+        BufferedReader reader;
+
+        try {
+            reader = new BufferedReader(new FileReader(path));
+        } catch (Exception e) {
+            showWarning("Файл не найден", path);
+            return Collections.emptyList();
+        }
 
         List<Transaction> result = new ArrayList<Transaction>();
 
