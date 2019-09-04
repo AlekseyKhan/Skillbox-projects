@@ -1,5 +1,9 @@
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Transaction {
+    private static Pattern isOperation = Pattern.compile("[\\/\\\\].+?\\s{3,}");
+
     private String type;
     private String accountNumber;
     private String currency;
@@ -8,6 +12,11 @@ public class Transaction {
     private String operation;
     private String income;
     private String expense;
+    private String operationName;
+
+    public String getOperationName() {
+        return operationName;
+    }
 
     public String getType() {
         return type;
@@ -55,6 +64,7 @@ public class Transaction {
 
     public void setOperation(String operation) {
         this.operation = operation;
+        this.operationName = getOperationName(operation);
     }
 
     public String getIncome() {
@@ -86,4 +96,17 @@ public class Transaction {
                 ", expense='" + expense + '\'' +
                 '}';
     }
+
+    private String getOperationName(String input) {
+        Matcher matcher = isOperation.matcher(input);
+        String source;
+        if (matcher.find()) {
+            source = matcher.group(0);
+            String[] splittedSource = source.split("\\\\|\\/");
+            return splittedSource[splittedSource.length - 1].trim();
+        }
+
+        return "unknown";
+    }
+
 }

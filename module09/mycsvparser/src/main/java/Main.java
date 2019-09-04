@@ -3,6 +3,8 @@ import java.sql.SQLOutput;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main {
     private static final int AMOUNT_OF_FIELDS = 8;
@@ -13,7 +15,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         String pathOfCSV = "data/movementList.csv";
 
-        List<Transaction> list = getData(pathOfCSV);
+        List<Transaction> list = getDataFromCSV(pathOfCSV);
 
         if (!list.isEmpty()) {
             showReport(list);
@@ -25,13 +27,12 @@ public class Main {
         long expenseSum = 0;
         Map<String, Long> operationSum = new HashMap();
 
-        for(Transaction record: data.subList(1, data.size())) {
+        for (Transaction record : data.subList(1, data.size())) {
             if (!record.getIncome().trim().equals("0") && record.getExpense().trim().equals("0")) {
                 incomeSum = calculateIncome(incomeSum, record.getIncome());
 
             } else if (!record.getExpense().trim().equals("0") && record.getIncome().trim().equals("0")) {
-                String operationName = getOperationName(expenseOperation.matcher(record.getOperation()));
-                expenseSum = calculateExpense(expenseSum, record.getExpense(), operationName, operationSum);
+                expenseSum = calculateExpense(expenseSum, record.getExpense(), record.getOperationName(), operationSum);
             } else {
                 showWarning("Расход/Приход", record.toString());
             }
@@ -40,18 +41,36 @@ public class Main {
         System.out.println("Общий приход: " + convertToFract(incomeSum));
         System.out.println("Общий расход: " + convertToFract(expenseSum));
         System.out.println("Расходы по операциям");
-        for(Map.Entry entry: operationSum.entrySet()) {
+        for (Map.Entry entry : operationSum.entrySet()) {
             System.out.println(entry.getKey() + "= " + convertToFract((Long) entry.getValue()));
         }
+
+
+        System.out.println("\nЗадание со звездочкой \nКонтрагент: сумма_прихода  сумма_расхода\n");
+        data.stream().skip(1)
+                .collect(Collectors.groupingBy(Transaction::getOperationName))
+                .forEach((name, transactions) -> {
+
+                    Summary summary = transactions.stream()
+                            .map(transaction -> new Summary(
+                                    convertToLong(transaction.getIncome()),
+                                    convertToLong(transaction.getExpense())))
+                            .reduce((a, b) -> a.calculateSum(b))
+                            .get();
+
+                    System.out.println(name + ": " + convertToFract(summary.getIncome()) + " | " + convertToFract(summary.getExpense()));
+                });
+
+
     }
 
     private static long convertToLong(String input) {
-        if(patternForFract.matcher(input.replaceAll("\"","")).matches()) {
+        if (patternForFract.matcher(input.replaceAll("\"", "")).matches()) {
             double num = Double.parseDouble(input
-                    .replaceAll("\"","")
-                    .replace(",","."));
+                    .replaceAll("\"", "")
+                    .replace(",", "."));
             return (long) (num * 100);
-        } else if (patternForInt.matcher(input).matches()){
+        } else if (patternForInt.matcher(input).matches()) {
             return Long.parseLong(input + "00");
         } else {
             return -1;
@@ -59,18 +78,7 @@ public class Main {
     }
 
     private static String convertToFract(long input) {
-        return String.format("%d.%02d",input / 100, input % 100);
-    }
-
-    private static String getOperationName(Matcher matcher) {
-        String source;
-        if (matcher.find()) {
-            source = matcher.group(0);
-            String[] splittedSource = source.split("\\\\|\\/");
-            return splittedSource[splittedSource.length - 1].trim();
-        }
-
-        return "unknown";
+        return String.format("%d.%02d", input / 100, input % 100);
     }
 
     private static long calculateIncome(long incomeSum, String value) {
@@ -102,75 +110,93 @@ public class Main {
         return expenseSum;
     }
 
-    private static List<Transaction> getData(String path) throws IOException {
+    private static List<Transaction> getDataFromCSV(String path) {
+        List<Transaction> transactions = new ArrayList<Transaction>();
 
-        BufferedReader reader;
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))
+        ) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] splitedText = line.split(",");
+                ArrayList<String> columnList = new ArrayList<String>();
 
-        try {
-            reader = new BufferedReader(new FileReader(path));
-        } catch (Exception e) {
-            showWarning("Файл не найден", path);
-            return Collections.emptyList();
-        }
-
-        List<Transaction> result = new ArrayList<Transaction>();
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            String[] splitedText = line.split(",");
-            ArrayList<String> columnList = new ArrayList<String>();
-
-            for (int i = 0; i < splitedText.length; i++) {
-                String text = splitedText[i];
-                if (isColumnStartWithQuot(text)) {
-                    do {
-                        if(!isColumnEndAtQuot(text)) {
+                for (int i = 0; i < splitedText.length; i++) {
+                    String text = splitedText[i];
+                    if (isColumnStartWithQuot(text)) {
+                        while (!isColumnEndAtQuot(text)) {
                             i++;
                             text = text + "," + splitedText[i];
                         }
-
-                    } while(!isColumnEndAtQuot(text));
-                    columnList.add(text);
-                } else {
+                    }
                     columnList.add(text);
                 }
+
+                if (columnList.size() != AMOUNT_OF_FIELDS) {
+                    showWarning("входные данные", line);
+                    continue;
+                }
+
+                Transaction tr = new Transaction();
+                tr.setType(columnList.get(0));
+                tr.setAccountNumber(columnList.get(1));
+                tr.setCurrency(columnList.get(2));
+                tr.setOperationDate(columnList.get(3));
+                tr.setReference(columnList.get(4));
+                tr.setOperation(columnList.get(5));
+                tr.setIncome(columnList.get(6));
+                tr.setExpense(columnList.get(7));
+                transactions.add(tr);
             }
 
-            if (columnList.size() != AMOUNT_OF_FIELDS) {
-                showWarning("входные данные", line);
-                continue;
-            }
-
-            Transaction tr = new Transaction();
-            tr.setType(columnList.get(0));
-            tr.setAccountNumber(columnList.get(1));
-            tr.setCurrency(columnList.get(2));
-            tr.setOperationDate(columnList.get(3));
-            tr.setReference(columnList.get(4));
-            tr.setOperation(columnList.get(5));
-            tr.setIncome(columnList.get(6));
-            tr.setExpense(columnList.get(7));
-            result.add(tr);
-
+        } catch (Exception e) {
+            showWarning("Файл не найден", path);
         }
 
-        return result;
+        return transactions;
     }
 
     private static boolean isColumnStartWithQuot(String text) {
-        String trimText = text.trim();
-        boolean bool = trimText.startsWith("\"");
-        return bool;
+        return text.trim().startsWith("\"");
     }
 
     private static boolean isColumnEndAtQuot(String text) {
-        String trimText = text.trim();
-        boolean bool = trimText.endsWith("\"");
-        return bool;
+        return text.trim().endsWith("\"");
     }
 
     private static void showWarning(String message, String source) {
         System.out.printf("Не удалось прочитать '%s' из '%s' \n", message, source);
     }
 
+    private static class Summary {
+        long income;
+        long expense;
+
+        Summary(long income, long expense) {
+            this.income = income;
+            this.expense = expense;
+        }
+
+
+        public long getIncome() {
+            return income;
+        }
+
+        public long getExpense() {
+            return expense;
+        }
+
+        Summary calculateSum(Summary b) {
+            income += b.getIncome();
+            expense += b.getExpense();
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "Summary{" +
+                    "income=" + income +
+                    ", expense=" + expense +
+                    '}';
+        }
+    }
 }
