@@ -1,21 +1,20 @@
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class Transaction {
-    private static Pattern isOperation = Pattern.compile("[\\/\\\\].+?\\s{3,}");
-
     private String type;
     private String accountNumber;
     private String currency;
     private String operationDate;
     private String reference;
     private String operation;
-    private String income;
-    private String expense;
-    private String operationName;
+    private long income;
+    private long expense;
+    private String namePlace;
 
-    public String getOperationName() {
-        return operationName;
+    public String getNamePlace() {
+        return namePlace;
+    }
+
+    public void setNamePlace(String namePlace) {
+        this.namePlace = namePlace;
     }
 
     public String getType() {
@@ -64,22 +63,21 @@ public class Transaction {
 
     public void setOperation(String operation) {
         this.operation = operation;
-        this.operationName = getOperationName(operation);
     }
 
-    public String getIncome() {
+    public long getIncome() {
         return income;
     }
 
-    public void setIncome(String income) {
+    public void setIncome(long income) {
         this.income = income;
     }
 
-    public String getExpense() {
+    public long getExpense() {
         return expense;
     }
 
-    public void setExpense(String expense) {
+    public void setExpense(long expense) {
         this.expense = expense;
     }
 
@@ -95,18 +93,6 @@ public class Transaction {
                 ", income='" + income + '\'' +
                 ", expense='" + expense + '\'' +
                 '}';
-    }
-
-    private String getOperationName(String input) {
-        Matcher matcher = isOperation.matcher(input);
-        String source;
-        if (matcher.find()) {
-            source = matcher.group(0);
-            String[] splittedSource = source.split("\\\\|\\/");
-            return splittedSource[splittedSource.length - 1].trim();
-        }
-
-        return "unknown";
     }
 
 }
