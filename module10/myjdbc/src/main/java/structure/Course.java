@@ -23,7 +23,7 @@ public class Course {
     private int teacherID;
 
     @Column(name = "students_count")
-    private int studentsCount;
+    private Integer studentsCount;
 
     private int price;
 
@@ -78,12 +78,12 @@ public class Course {
         this.teacherID = teacherID;
     }
 
-    public int getStudentsCount() {
+    public Integer getStudentsCount() {
         return studentsCount;
     }
 
     public void setStudentsCount(int studentsCount) {
-        this.studentsCount = studentsCount;
+        this.studentsCount =  studentsCount;
     }
 
     public int getPrice() {

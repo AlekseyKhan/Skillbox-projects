@@ -25,12 +25,8 @@ public class HomeWork2 {
             SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
             Session session = sessionFactory.openSession();
 
-            Transaction transaction = session.beginTransaction();
             Course course = session.get(Course.class, 46);
-            course.setStudentsCount(5);
-            course.setDescription("placeholder");
-            session.save(course);
-            transaction.commit();
+            checkedCourse(session, course);
 
             try {
                 getCorses(session).forEach(System.out::println);
@@ -55,4 +51,20 @@ public class HomeWork2 {
 
         return Collections.emptyList().stream();
     }
+
+    private static void checkedCourse(Session session, Course course) {
+        Transaction transaction = session.beginTransaction();
+
+        if (course.getDescription() == null) {
+            course.setDescription("placeholder");
+        }
+
+        if (course.getStudentsCount() == null) {
+            course.setStudentsCount((int) Math.random());
+        }
+
+        session.save(course);
+        transaction.commit();
+    }
+
 }
