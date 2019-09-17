@@ -1,5 +1,6 @@
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -23,6 +24,13 @@ public class HomeWork2 {
             Metadata metadata = new MetadataSources(registry).getMetadataBuilder().build();
             SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
             Session session = sessionFactory.openSession();
+
+            Transaction transaction = session.beginTransaction();
+            Course course = session.get(Course.class, 46);
+            course.setStudentsCount(5);
+            course.setDescription("placeholder");
+            session.save(course);
+            transaction.commit();
 
             try {
                 getCorses(session).forEach(System.out::println);
