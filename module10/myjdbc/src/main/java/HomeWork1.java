@@ -1,6 +1,6 @@
 import java.sql.*;
 
-public class Main {
+public class HomeWork1 {
     public static void main(String[] args) {
         String url = "jdbc:mysql://localhost:3306/skillbox?serverTimezone=UTC";
         String user = "root";
