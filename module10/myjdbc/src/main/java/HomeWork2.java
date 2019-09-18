@@ -8,7 +8,6 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.query.Query;
 import structure.Course;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -43,15 +42,15 @@ public class HomeWork2 {
     }
 
     private static Stream<Course> getCorses(Session session) {
-        List<Course> list = new ArrayList<>();
         try {
             Query query = session.createQuery("FROM Course", Course.class);
-            list = query.list();
+            List<Course> list = query.list();
+            return list.stream();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return list.stream();
+        return Collections.<Course>emptyList().stream();
     }
 
     private static void checkedCourse(Session session, Course course) {
