@@ -8,6 +8,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.query.Query;
 import structure.Course;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -22,34 +23,35 @@ public class HomeWork2 {
                         .configure(hibernateConfig).build();
         ) {
             Metadata metadata = new MetadataSources(registry).getMetadataBuilder().build();
-            SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
-            Session session = sessionFactory.openSession();
 
-            Course course = session.get(Course.class, 46);
-            checkedCourse(session, course);
+            try (
+                    SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
+                    Session session = sessionFactory.openSession();
+            ) {
+                Course course = session.get(Course.class, 46);
+                checkedCourse(session, course);
 
-            try {
                 getCorses(session).forEach(System.out::println);
 
             } catch (Exception e) {
                 System.out.println("Ошибка чтения БД");
             }
 
-            session.close();
-            sessionFactory.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    private static Stream getCorses(Session session) {
+    private static Stream<Course> getCorses(Session session) {
+        List<Course> list = new ArrayList<>();
         try {
-            Query query = session.createQuery("FROM Course");
-            List<Course> list = (List<Course>) query.list();
-            return list.stream();
+            Query query = session.createQuery("FROM Course", Course.class);
+            list = query.list();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return Collections.emptyList().stream();
+        return list.stream();
     }
 
     private static void checkedCourse(Session session, Course course) {
