@@ -1,6 +1,7 @@
 package structure;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "Courses")
@@ -19,8 +20,8 @@ public class Course {
 
     private String description;
 
-    @Column(name = "teacher_id")
-    private int teacherID;
+    @ManyToOne(cascade  = CascadeType.ALL)
+    private Teacher teacher;
 
     @Column(name = "students_count")
     private Integer studentsCount;
@@ -29,6 +30,13 @@ public class Course {
 
     @Column(name = "price_per_hour")
     private float pricePerHour;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "subscriptions",
+        joinColumns = {@JoinColumn(name ="course_id")},
+        inverseJoinColumns = {@JoinColumn(name = "student_id")}
+    )
+    private List<Student> students;
 
     public int getId() {
         return id;
@@ -70,12 +78,12 @@ public class Course {
         this.description = description;
     }
 
-    public int getTeacherID() {
-        return teacherID;
+    public Teacher getTeacher() {
+        return teacher;
     }
 
-    public void setTeacherID(int teacherID) {
-        this.teacherID = teacherID;
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
     }
 
     public Integer getStudentsCount() {
@@ -111,5 +119,13 @@ public class Course {
                 ", type=" + type +
                 ", price=" + price +
                 '}';
+    }
+
+    public List<Student> getStudents() {
+        return students;
+    }
+
+    public void setStudents(List<Student> students) {
+        this.students = students;
     }
 }
