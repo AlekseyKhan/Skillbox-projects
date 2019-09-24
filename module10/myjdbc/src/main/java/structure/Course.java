@@ -2,6 +2,8 @@ package structure;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "Courses")
@@ -20,10 +22,10 @@ public class Course {
 
     private String description;
 
-    @ManyToOne(cascade  = CascadeType.ALL)
+    @ManyToOne(cascade  = CascadeType.ALL, fetch = FetchType.LAZY)
     private Teacher teacher;
 
-    @Column(name = "students_count")
+    @Column(name = "students_count", nullable = true)
     private Integer studentsCount;
 
     private int price;
@@ -36,7 +38,7 @@ public class Course {
         joinColumns = {@JoinColumn(name ="course_id")},
         inverseJoinColumns = {@JoinColumn(name = "student_id")}
     )
-    private List<Student> students;
+    private Set<Student> students;
 
     public int getId() {
         return id;
@@ -121,11 +123,28 @@ public class Course {
                 '}';
     }
 
-    public List<Student> getStudents() {
+    public Set<Student> getStudents() {
         return students;
     }
 
-    public void setStudents(List<Student> students) {
+    public void setStudents(Set<Student> students) {
         this.students = students;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Course course = (Course) o;
+        return duration == course.duration &&
+                price == course.price &&
+                Objects.equals(name, course.name) &&
+                type == course.type;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(name, duration, type, price);
     }
 }

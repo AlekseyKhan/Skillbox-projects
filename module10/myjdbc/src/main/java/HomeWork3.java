@@ -6,7 +6,10 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import structure.Course;
+import structure.Student;
 import structure.Subscription;
+
+import java.util.ArrayList;
 
 public class HomeWork3 {
     static String hibernateConfig = "hibernate.cfg.xml";
@@ -24,8 +27,10 @@ public class HomeWork3 {
             ) {
                 Course course = session.get(Course.class, 1);
                 course.getStudents().forEach(System.out::println);
+
+                Student student = (new ArrayList<Student>(course.getStudents())).get(1);
                 Subscription subscription = session.get(Subscription.class,
-                        new Subscription.SubscriptionPK(course.getStudents().get(1), course));
+                        new Subscription.SubscriptionPK(student, course));
                 System.out.println(subscription.toString());
 
             } catch (Exception e) {

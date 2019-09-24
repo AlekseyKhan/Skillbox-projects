@@ -13,6 +13,10 @@ public class Subscription {
     @Column(name = "subscription_date")
     private Date subscriptionsDate;
 
+    public SubscriptionPK getKey() {
+        return key;
+    }
+
     public Date getSubscriptionsDate() {
         return subscriptionsDate;
     }
@@ -45,6 +49,14 @@ public class Subscription {
         }
 
         public SubscriptionPK() {
+        }
+
+        public Course getCourse() {
+            return course;
+        }
+
+        public Student getStudent() {
+            return student;
         }
 
         @Override
