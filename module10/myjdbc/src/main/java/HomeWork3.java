@@ -28,9 +28,10 @@ public class HomeWork3 {
                 Course course = session.get(Course.class, 1);
                 course.getStudents().forEach(System.out::println);
 
-                Student student = (new ArrayList<Student>(course.getStudents())).get(1);
+//                Student student = (new ArrayList<Student>(course.getStudents())).get(1);
+                Student student = course.getStudents().iterator().next();
                 Subscription subscription = session.get(Subscription.class,
-                        new Subscription.SubscriptionPK(student, course));
+                        new Subscription.SubscriptionPK(student.getId(), course.getId()));
                 System.out.println(subscription.toString());
 
             } catch (Exception e) {

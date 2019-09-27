@@ -10,9 +10,6 @@ import structure.Purchase;
 import structure.Student;
 import structure.Subscription;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,43 +27,36 @@ public class HomeWork4 {
                     SessionFactory sessionFactory = metadata.getSessionFactoryBuilder().build();
                     Session session = sessionFactory.openSession();
             ) {
-
-                String hql = "From " + Subscription.class.getSimpleName();
-                List<Subscription> subscriptions = session.createQuery(hql).getResultList();
+                List<Subscription> subscriptions = session.createQuery(
+                        " from Subscription sub" +
+                        " join fetch sub.course c" +
+                        " join fetch sub.student s" , Subscription.class).getResultList();
 
                 List<Purchase> purchaseList = new ArrayList<>();
                 subscriptions.forEach(subscription -> {
                     purchaseList.add(new Purchase(
-                            subscription.getKey().getStudent(),
-                            subscription.getKey().getCourse(),
-                            subscription.getKey().getCourse().getPrice(),
+                            subscription.getStudent(),
+                            subscription.getCourse(),
+                            subscription.getCourse().getPrice(),
                             subscription.getSubscriptionsDate())
                     );
-//                    Transaction transaction = session.beginTransaction();
-//                    session.save(new Purchase(
-//                            subscription.getKey().getStudent(),
-//                            subscription.getKey().getCourse(),
-//                            subscription.getKey().getCourse().getPrice(),
-//                            subscription.getSubscriptionsDate())
-//                    );
-//                    transaction.commit();
                 });
 
+                System.out.println("Начало транзакции");
+                Transaction transaction = session.beginTransaction();
                 purchaseList.forEach(p -> {
                     try {
-                        Transaction transaction = session.beginTransaction();
-                        System.out.println("Перезапись " + p + "...");
                         session.save(p);
-                        transaction.commit();
-                        System.out.println("OK");
 
                     } catch (Exception e) {
-                        System.out.println("Failed");
+                        System.out.println("Save failed");
                     }
                 });
+                transaction.commit();
+                System.out.println("Изменения внесены в БД");
 
             } catch (Exception e) {
-                System.out.println("Ошибка чтения БД");
+                System.out.println("Ошибка доступа к БД");
                 e.printStackTrace();
             }
 

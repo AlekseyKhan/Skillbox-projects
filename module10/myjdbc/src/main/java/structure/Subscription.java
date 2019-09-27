@@ -13,6 +13,14 @@ public class Subscription {
     @Column(name = "subscription_date")
     private Date subscriptionsDate;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "course_id", insertable = false, updatable = false)
+    protected Course course;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "student_id", insertable = false, updatable = false)
+    protected Student student;
+
     public SubscriptionPK getKey() {
         return key;
     }
@@ -23,6 +31,14 @@ public class Subscription {
 
     public void setSubscriptionsDate(Date subscriptionsDate) {
         this.subscriptionsDate = subscriptionsDate;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public Student getStudent() {
+        return student;
     }
 
     @Override
@@ -37,33 +53,33 @@ public class Subscription {
     @Embeddable
     public static class SubscriptionPK implements Serializable {
 
-        @ManyToOne(cascade = CascadeType.ALL)
-        protected Course course;
+        @Column(name = "course_id")
+        protected int courseId;
 
-        @ManyToOne(cascade = CascadeType.ALL)
-        protected Student student;
+        @Column(name = "student_id")
+        protected int studentId;
 
-        public SubscriptionPK(Student student, Course course) {
-            this.student = student;
-            this.course = course;
+        public SubscriptionPK(int studentId, int courseId) {
+            this.studentId = studentId;
+            this.courseId = courseId;
         }
 
         public SubscriptionPK() {
         }
 
-        public Course getCourse() {
-            return course;
+        public int getCourse() {
+            return courseId;
         }
 
-        public Student getStudent() {
-            return student;
+        public int getStudent() {
+            return studentId;
         }
 
         @Override
         public String toString() {
             return "SubscriptionPK{" +
-                    "course=" + course.getName() +
-                    ", student=" + student.getName() +
+                    "courseId=" + courseId +
+                    ", studentId=" + studentId +
                     '}';
         }
     }
