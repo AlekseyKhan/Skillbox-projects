@@ -17,7 +17,8 @@ public class Bank {
 
     public synchronized boolean isFraud(String fromAccountNum, String toAccountNum, long amount)
             throws InterruptedException {
-        Thread.sleep(1000);
+        System.out.printf("...Идет проверка (%s -> %s, %d)", fromAccountNum, toAccountNum, amount);
+        Thread.sleep(1500);
         return random.nextBoolean();
     }
 
@@ -31,7 +32,7 @@ public class Bank {
     public synchronized void transfer(String fromAccountNum, String toAccountNum, long amount) {
         Account from = accounts.get(fromAccountNum);
         Account to = accounts.get(toAccountNum);
-        System.out.printf("Перевод %d со счета %s на счет %s \n", amount, from, to);
+        System.out.printf("%s >> %s (%d)", from.getAccNumber(), to.getAccNumber(), amount);
         if (!isChecked(from, to, amount)) {
             return;
         }
@@ -43,14 +44,14 @@ public class Bank {
             if (amount > 50000 && isFraud(fromAccountNum, toAccountNum, amount)) {
                 from.setBlock(true);
                 to.setBlock(true);
-                System.out.printf("Счета %s и %s заблокированы службой безопасности\n", from.getAccNumber(), to.getAccNumber());
+                System.out.printf("...Неудача!" +
+                        "\nСчета %s и %s заблокированы службой безопасности\n", from.getAccNumber(), to.getAccNumber());
+            } else {
+                System.out.println("...Успешно");
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.printf("%s остаток: %d\n", from.getAccNumber(), from.getMoney());
-        System.out.printf("%s остаток: %d\n", to.getAccNumber(), to.getMoney());
-
     }
 
     /**
@@ -62,12 +63,12 @@ public class Bank {
 
     private boolean isChecked(Account from, Account to, long value) {
         if (from.isBlock() || to.isBlock()) {
-            System.out.println("Один из счетов заблокирован");
+            System.out.println("...Один из счетов заблокирован");
             return false;
         }
 
         if (!(from.getMoney() >= value && value > 0)) {
-            System.out.println("Неверная сумма или недостаточно средств");
+            System.out.println("...Неверная сумма или недостаточно средств");
             return false;
         }
 
